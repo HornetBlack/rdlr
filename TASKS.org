@@ -1,0 +1,7 @@
+
+* TODO Write make file
+** DONE Simple just compiles rdl.c
+** TODO Recompile plugins.
+
+* TODO Setup plugin structure.
+  
