@@ -3,18 +3,17 @@
 ** DONE Simple just compiles rdl.c
 ** DONE Recompile plugins.
 ** TODO Save .o files
-** TODO Introspection   
-
+** TODO [[Introspection]]
 * DONE Setup plugin layout.
   src/rdl.c     Main function
   src/*.c       Support for rdl.c
   src/*.rdl/    1 directory for each plugin
-** Inside rld dirs:
+** TODO Inside rld dirs:
    + Introspection 1 file per plugin.
-     interface.FORMAT (see the TODO)
+     interface.FORMAT (see [[Introspection]])
    + Source code
-     *.c
-     *.h
+     .c files (name requirements?)
+     .h files (export, generate from introsection?)
 ** Results:
    src/NAME.rld
    bin/pluginNAME.so
@@ -25,27 +24,96 @@
 ** DONE Extract symbols.
 
 * TODO Introspection.
-  How to link. How to expose to other plugins and rld.
+  #+NAME: Introspection
+  How to expose to other plugins and rld.
   Should rld itself expose a plugin interface?
 ** File format
-   for now plain text: 
-*** Custom
-   Request: 
-   init()
-   method1(type arg1, type arg2) ... 
-   Event:
-   event(type arg1)
+   Proposals
+*** Custom:
+    // console.def
+    Event: 
+        init(List<Error<rdl>> load_errors)
+    Request:
+        display_text(String data)
+*** Xml:
+    Based on wayland
+    #+BEGIN_SRC xml
+      <plugin name="console">
+        <event name="init">
+          <description>Setup plugin.</description>
+          <arg name="load_errors" type="List (Error rdl)" />
+        </event>
+        <request name="display_text">
+          <description>Display text in the terminal/console</description>
+          <arg name="data" type="String" />
+        </request>
+      </plugin>
+    #+END_SRC
+*** Direct from source
+    #+BEGIN_SRC c
+      /* console.c */
+      #include <rdl.h>
+      RDL_EVENT(init) (List *load_errors) {
+        /* Do stuff */
+      }
+      RDL_REQUEST(display_text) (String *data) {
+        /* Do stuff */
+      }
+    #+END_SRC
+    Which would expand to:
+    #+BEGIN_SRC c
+      #include <rdl.h>
+      /* RDL_EVENT macro does nothing for cpp only for scanner tool */
+      void init(List *load_errors) {
+      }
+      void display_text(String *data) {
+      }
+    #+END_SRC
 
-*** Xml?
-    <plugin name="name">
-     <request name="init">
-      <description>Setup plugin.</description>
-     </request>
-     <request name="request1">
-      <arg name="arg1" type="type" />
-      <arg name="arg2" type="type" />
-     </request>
-     <event name="event">
-      <arg name="arg1" type="type" />
-     </event>
-    </plugin>
+* TODO Decide api magic.
+** Simple
+   (Based on wayland)
+   + Event
+     Called from somewhere else with arguments. Exits but doesn't return. 
+     Register for event. (Somehow, request to rdl?)
+     Examples
+     - init(list<error<rdl>> load_errors)
+       load_errors: List of errors that occurred during loading.
+   + Request
+     Exposed to other plugins. May be called with argument.
+     Triggers event in 
+     Examples
+     - display(string_buffer)
+** Other
+   + Method
+     Called by other plugins.
+     Like request, wait until return and return value (unlike request).
+     Issues: 
+      - blocking, events should be handled quickly unless they're terminating events (file writes, etc).
+        So a plugin that handles some low latency code might call a method that results in hitting a locked mutex,
+        and must wait too long, causing stalls in pipeline, etc. 
+      - Also might be very slow across IPC/Network boundaries.
+   + Value:
+     #+NAME: Value
+     Defined data types. 
+     Allows manipulation of data by method/requests to type provider.
+     Eg:
+     Say I need a way to store an image and manipulate it. 
+     I could get a handle from an image plugin. 
+     Use methods such as draw_rectangle to modify it,
+     and pass it to a plugin that accepts it in a request.
+   + Anonymous Event / Callback
+     Alternative to Method.
+     Client sends request with callback handler as argument.
+     When appropriate the request handler sends request to callback.
+     Client get's event with private event handler.
+
+* TODO Data types
+** Builtin:
+   + String
+     C string handling is horrible. Replace with something better
+   + List
+     So sequences of data can be thrown about the place.
+** Custom:
+   [[Value]]
+     
