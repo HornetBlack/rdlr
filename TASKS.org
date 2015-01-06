@@ -1,7 +1,51 @@
 
 * TODO Write make file
 ** DONE Simple just compiles rdl.c
-** TODO Recompile plugins.
+** DONE Recompile plugins.
+** TODO Save .o files
+** TODO Introspection   
 
-* TODO Setup plugin structure.
-  
+* DONE Setup plugin layout.
+  src/rdl.c     Main function
+  src/*.c       Support for rdl.c
+  src/*.rdl/    1 directory for each plugin
+** Inside rld dirs:
+   + Introspection 1 file per plugin.
+     interface.FORMAT (see the TODO)
+   + Source code
+     *.c
+     *.h
+** Results:
+   src/NAME.rld
+   bin/pluginNAME.so
+
+* DONE Open plugins
+** DONE Glob file names
+** DONE Use dlopen to open the files.
+** DONE Extract symbols.
+
+* TODO Introspection.
+  How to link. How to expose to other plugins and rld.
+  Should rld itself expose a plugin interface?
+** File format
+   for now plain text: 
+*** Custom
+   Request: 
+   init()
+   method1(type arg1, type arg2) ... 
+   Event:
+   event(type arg1)
+
+*** Xml?
+    <plugin name="name">
+     <request name="init">
+      <description>Setup plugin.</description>
+     </request>
+     <request name="request1">
+      <arg name="arg1" type="type" />
+      <arg name="arg2" type="type" />
+     </request>
+     <event name="event">
+      <arg name="arg1" type="type" />
+     </event>
+    </plugin>

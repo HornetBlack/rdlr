@@ -1,20 +1,28 @@
 
 # Currently fixed. In future that may change.
 EXE := bin/rdl
-EXE_SRC := src/*.c
+EXE_SRC := $(wildcard src/*.c)
 
-# Build artifacts.
+PLUGIN := $(wildcard src/*.rdl)
+PLUGIN_LIB := $(PLUGIN:src/%.rdl=bin/%.so)
 
 # The actual color value doesn't matter just that it exists
 GCC_COLORS := auto
 CC := gcc
-CFLAGS := -Wall -Werror
+CFLAGS := -Wall -Werror -O2
 
 .PHONY: all
-all: check_dirs $(EXE)
+all: check_dirs $(EXE) $(PLUGIN_LIB)
+	@ echo $(PLUGIN)
+	@ echo $(PLUGIN_LIB)
 
 $(EXE): $(EXE_SRC)
-	gcc -Wall -Werror -o $@ $(EXE_SRC)
+	$(CC) $(CFLAGS) -o $@ $(EXE_SRC) -ldl
+
+build/%.o:
+
+bin/%.so: src/%.rdl/*.c 
+	$(CC) -fPIC $(CFLAGS) -shared -o $@ $<
 
 .PHONY: check_dirs
 check_dirs:
@@ -22,9 +30,7 @@ check_dirs:
 	mkdir -p build
 
 .PHONY: clean
-clean:
-	rm bin/*
-	rmdir bin
-	rm build/*
-	rmdir build
+clean: check_dirs
+	rm -r bin
+	rm -r build
 
