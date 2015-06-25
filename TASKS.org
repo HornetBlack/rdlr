@@ -17,12 +17,14 @@
 ** Results:
    src/NAME.rld
    bin/pluginNAME.so
-
-* DONE Open plugins
+   
+* TODO Open plugins
 ** DONE Glob file names
 ** DONE Use dlopen to open the files.
 ** DONE Extract symbols.
 
+** TODO Refactor
+** TODO inotify autoload
 * TODO Introspection.
   #+NAME: Introspection
   How to expose to other plugins and rld.
@@ -69,8 +71,14 @@
       void display_text(String *data) {
       }
     #+END_SRC
-
+    
 * TODO Decide api magic.
+** Interface
+   Collection of events and requests.
+   Multiple plugins can make implement the same interface.
+   Who defines the interface though?
+   Does a interface plugin define an interface 
+   and then implementations can be defined in different plugins.
 ** Simple
    (Based on wayland)
    + Event
@@ -109,11 +117,15 @@
      Client get's event with private event handler.
 
 * TODO Data types
+** Generics:
+   Dynamic? It makes sense as plugins are hot-loaded new types need to be defined.
 ** Builtin:
    + String
      C string handling is horrible. Replace with something better
    + List
      So sequences of data can be thrown about the place.
+   + Error or Result.
+     C doesn't have generics, move to rust now?
 ** Custom:
    [[Value]]
      

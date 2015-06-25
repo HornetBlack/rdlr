@@ -1,6 +1,5 @@
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <unistd.h>
 
 const char *EVENTS[] = {
     "init",
@@ -10,5 +9,7 @@ const char *EVENTS[] = {
 /* Event init() */
 void init(void)
 {
-    printf("test.rdl init event\n");
+    const char hello[] = "Hello from test.rdl\n";
+    const size_t hello_size = sizeof(hello);
+    write(1, hello, hello_size);
 }
